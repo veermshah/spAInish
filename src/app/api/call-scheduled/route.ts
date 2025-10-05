@@ -39,10 +39,10 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error("Error making scheduled call:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to initiate scheduled call";
-        return NextResponse.json(
-            { error: errorMessage },
-            { status: 500 }
-        );
+        const errorMessage =
+            error instanceof Error
+                ? error.message
+                : "Failed to initiate scheduled call";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

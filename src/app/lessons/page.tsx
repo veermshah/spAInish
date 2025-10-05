@@ -69,9 +69,14 @@ export default function LessonsPage() {
     const [audioLoading, setAudioLoading] = useState(false);
     const [currentCharIndex, setCurrentCharIndex] = useState(-1);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const audioDataRef = useRef<{ alignment: any; fullText: string } | null>(
-        null
-    );
+    const audioDataRef = useRef<{
+        alignment: {
+            characters: string[];
+            character_start_times_seconds: number[];
+            character_end_times_seconds: number[];
+        };
+        fullText: string;
+    } | null>(null);
     const animationFrameRef = useRef<number | null>(null);
 
     // Mini-game state
@@ -88,11 +93,11 @@ export default function LessonsPage() {
         { spanish: "Gracias", english: "Thank you" },
         { spanish: "Por favor", english: "Please" },
         { spanish: "Perdón", english: "Excuse me" },
-        { spanish: "Lo siento", english: "I'm sorry" },
+        { spanish: "Lo siento", english: "I&apos;m sorry" },
         { spanish: "Buenos días", english: "Good morning" },
         { spanish: "Buenas noches", english: "Good night" },
         { spanish: "Hasta luego", english: "See you later" },
-        
+
         // Common Objects
         { spanish: "Agua", english: "Water" },
         { spanish: "Casa", english: "House" },
@@ -109,7 +114,7 @@ export default function LessonsPage() {
         { spanish: "Reloj", english: "Clock/Watch" },
         { spanish: "Llave", english: "Key" },
         { spanish: "Bolso", english: "Bag" },
-        
+
         // Animals
         { spanish: "Gato", english: "Cat" },
         { spanish: "Perro", english: "Dog" },
@@ -121,7 +126,7 @@ export default function LessonsPage() {
         { spanish: "Pollo", english: "Chicken" },
         { spanish: "Ratón", english: "Mouse" },
         { spanish: "Elefante", english: "Elephant" },
-        
+
         // Food & Drink
         { spanish: "Pan", english: "Bread" },
         { spanish: "Leche", english: "Milk" },
@@ -137,7 +142,7 @@ export default function LessonsPage() {
         { spanish: "Ensalada", english: "Salad" },
         { spanish: "Sopa", english: "Soup" },
         { spanish: "Huevo", english: "Egg" },
-        
+
         // People & Family
         { spanish: "Madre", english: "Mother" },
         { spanish: "Padre", english: "Father" },
@@ -150,7 +155,7 @@ export default function LessonsPage() {
         { spanish: "Niña", english: "Girl" },
         { spanish: "Hombre", english: "Man" },
         { spanish: "Mujer", english: "Woman" },
-        
+
         // Colors
         { spanish: "Rojo", english: "Red" },
         { spanish: "Azul", english: "Blue" },
@@ -162,7 +167,7 @@ export default function LessonsPage() {
         { spanish: "Rosa", english: "Pink" },
         { spanish: "Morado", english: "Purple" },
         { spanish: "Naranja", english: "Orange (color)" },
-        
+
         // Numbers
         { spanish: "Uno", english: "One" },
         { spanish: "Dos", english: "Two" },
@@ -174,7 +179,7 @@ export default function LessonsPage() {
         { spanish: "Ocho", english: "Eight" },
         { spanish: "Nueve", english: "Nine" },
         { spanish: "Diez", english: "Ten" },
-        
+
         // Places
         { spanish: "Escuela", english: "School" },
         { spanish: "Tienda", english: "Store" },
@@ -186,7 +191,7 @@ export default function LessonsPage() {
         { spanish: "Iglesia", english: "Church" },
         { spanish: "Playa", english: "Beach" },
         { spanish: "Ciudad", english: "City" },
-        
+
         // Time & Weather
         { spanish: "Día", english: "Day" },
         { spanish: "Noche", english: "Night" },
@@ -198,7 +203,7 @@ export default function LessonsPage() {
         { spanish: "Luna", english: "Moon" },
         { spanish: "Lluvia", english: "Rain" },
         { spanish: "Nieve", english: "Snow" },
-        
+
         // Common Verbs
         { spanish: "Hablar", english: "To speak" },
         { spanish: "Comer", english: "To eat" },
@@ -212,7 +217,7 @@ export default function LessonsPage() {
         { spanish: "Escuchar", english: "To listen" },
         { spanish: "Trabajar", english: "To work" },
         { spanish: "Estudiar", english: "To study" },
-        
+
         // Adjectives
         { spanish: "Grande", english: "Big" },
         { spanish: "Pequeño", english: "Small" },
@@ -312,7 +317,7 @@ export default function LessonsPage() {
                     cancelAnimationFrame(animationFrameRef.current);
                 }
             };
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to generate speech:", err);
             setError("Failed to generate speech");
         } finally {
@@ -492,8 +497,12 @@ export default function LessonsPage() {
                 .map((s: ArticleSection) => s.text)
                 .join("\n\n");
             generateQuizInBackground(fullArticle, lessonData.id);
-        } catch (err: any) {
-            setError(err.message || "Failed to generate article");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to generate article"
+            );
         } finally {
             setLoading(false);
         }
@@ -561,9 +570,9 @@ export default function LessonsPage() {
             if (quizError) {
                 console.error("Failed to save quiz questions:", quizError);
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to generate quiz:", err);
-            // Don't show error to user yet, they'll see it when they click continue
+            // Don&apos;t show error to user yet, they&apos;ll see it when they click continue
         } finally {
             setQuizLoading(false);
         }
@@ -610,8 +619,12 @@ export default function LessonsPage() {
             await saveLessonAttempt(data.evaluation);
 
             setStep("results");
-        } catch (err: any) {
-            setError(err.message || "Failed to evaluate summary");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to evaluate summary"
+            );
         } finally {
             setLoading(false);
         }
@@ -823,8 +836,8 @@ export default function LessonsPage() {
                                             {articleData.title}
                                         </CardTitle>
                                         <CardDescription>
-                                            Read carefully - you'll be quizzed
-                                            on this content
+                                            Read carefully - you&apos;ll be
+                                            quizzed on this content
                                         </CardDescription>
                                     </div>
                                     <Button

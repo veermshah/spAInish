@@ -13,31 +13,41 @@ export async function GET(request: NextRequest) {
 
         // If documentId is provided, get that specific document
         if (documentId) {
-            const document = await client.conversationalAi.knowledgeBase.documents.get(documentId, {});
+            const document =
+                await client.conversationalAi.knowledgeBase.documents.get(
+                    documentId,
+                    {}
+                );
             return NextResponse.json(document);
         }
 
         // Otherwise, list all documents
         const response = await client.conversationalAi.knowledgeBase.list({});
-        
+
         return NextResponse.json({
             documents: response.documents || [],
             next_cursor: response.nextCursor || null,
             has_more: response.hasMore || false,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error fetching knowledge base:", error);
-        
+
         // Check if it's a "not found" error
-        if (error.message?.includes("not found")) {
+        const errorMessage = error instanceof Error ? error.message : "";
+        if (errorMessage?.includes("not found")) {
             return NextResponse.json(
                 { error: "Document not found" },
                 { status: 404 }
             );
         }
-        
+
         return NextResponse.json(
-            { error: error.message || "Failed to fetch knowledge base documents" },
+            {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to fetch knowledge base documents",
+            },
             { status: 500 }
         );
     }
@@ -56,18 +66,77 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const response = await client.conversationalAi.knowledgeBase.documents.createFromText({
-            text: text.trim(),
-        });
+        // Step 1: Create the knowledge base document
+        const response =
+            await client.conversationalAi.knowledgeBase.documents.createFromText(
+                {
+                    text: text.trim(),
+                }
+            );
+
+        // Step 2: Attach the document to the agent (if enabled)
+        const shouldAttachToAgent =
+            process.env.ELEVENLABS_AUTO_ATTACH_KNOWLEDGE !== "false";
+        const agentId =
+            process.env.ELEVENLABS_AGENT_ID ||
+            "agent_6201k6shnp39eheavzgd5afg85pr";
+
+        if (shouldAttachToAgent) {
+            try {
+                // Get current agent configuration
+                const agent = await client.conversationalAi.agents.get(agentId);
+                const current =
+                    agent.conversationConfig.agent?.prompt?.knowledgeBase ?? [];
+
+                // Check if document already exists in agent's knowledge base
+                const exists = current.some(
+                    (k: { id: string }) => k.id === response.id
+                );
+
+                // Only update if document doesn't already exist
+                if (!exists) {
+                    const newDoc = {
+                        type: "file" as const,
+                        id: response.id,
+                        name: response.name || "",
+                    };
+
+                    const knowledgeBase = [...current, newDoc];
+
+                    // Update agent with new knowledge base, preserving existing config
+                    await client.conversationalAi.agents.update(agentId, {
+                        conversationConfig: {
+                            ...agent.conversationConfig,
+                            agent: {
+                                ...agent.conversationConfig.agent,
+                                prompt: {
+                                    ...agent.conversationConfig.agent?.prompt,
+                                    knowledgeBase,
+                                },
+                            },
+                        },
+                    });
+                }
+            } catch (agentError) {
+                console.error("Error attaching document to agent:", agentError);
+                // Don't fail the whole request if agent attachment fails
+                // The document was still created successfully
+            }
+        }
 
         return NextResponse.json({
             id: response.id,
             name: response.name,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error creating knowledge base document:", error);
         return NextResponse.json(
-            { error: error.message || "Failed to create knowledge base document" },
+            {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to create knowledge base document",
+            },
             { status: 500 }
         );
     }
@@ -86,14 +155,62 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        await client.conversationalAi.knowledgeBase.documents.delete(documentId, {});
+        // Step 1: Remove document from agent's knowledge base (if enabled)
+        const shouldAttachToAgent =
+            process.env.ELEVENLABS_AUTO_ATTACH_KNOWLEDGE !== "false";
+        const agentId =
+            process.env.ELEVENLABS_AGENT_ID ||
+            "agent_6201k6shnp39eheavzgd5afg85pr";
+
+        if (shouldAttachToAgent) {
+            try {
+                // Get current agent configuration
+                const agent = await client.conversationalAi.agents.get(agentId);
+                const current =
+                    agent.conversationConfig.agent?.prompt?.knowledgeBase ?? [];
+
+                // Filter out the document being deleted
+                const knowledgeBase = current.filter(
+                    (k: { id: string }) => k.id !== documentId
+                );
+
+                // Only update if something was actually removed
+                if (knowledgeBase.length < current.length) {
+                    await client.conversationalAi.agents.update(agentId, {
+                        conversationConfig: {
+                            ...agent.conversationConfig,
+                            agent: {
+                                ...agent.conversationConfig.agent,
+                                prompt: {
+                                    ...agent.conversationConfig.agent?.prompt,
+                                    knowledgeBase,
+                                },
+                            },
+                        },
+                    });
+                }
+            } catch (agentError) {
+                console.error(
+                    "Error removing document from agent:",
+                    agentError
+                );
+                // Continue with deletion even if agent update fails
+            }
+        }
+
+        // Step 2: Delete the document from knowledge base
+        await client.conversationalAi.knowledgeBase.documents.delete(
+            documentId,
+            {}
+        );
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error deleting knowledge base document:", error);
-        
+
         // Check if it's a "not found" error
-        if (error.message?.includes("not found")) {
+        const errorMessage = error instanceof Error ? error.message : "";
+        if (errorMessage?.includes("not found")) {
             return NextResponse.json(
                 { error: "Document not found" },
                 { status: 404 }
@@ -101,7 +218,12 @@ export async function DELETE(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { error: error.message || "Failed to delete knowledge base document" },
+            {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to delete knowledge base document",
+            },
             { status: 500 }
         );
     }

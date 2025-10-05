@@ -105,9 +105,9 @@ export default function ViewLessonPage() {
                     setSelectedAttempt(attemptsData[0]); // Select most recent attempt by default
                 }
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error:", err);
-            setError(err.message || "An error occurred");
+            setError(err instanceof Error ? err.message : "An error occurred");
         } finally {
             setLoading(false);
         }

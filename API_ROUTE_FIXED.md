@@ -5,11 +5,13 @@
 Updated the knowledge base API route to use the **correct ElevenLabs SDK package**:
 
 ### Before (Wrong ❌):
+
 ```typescript
 import { ElevenLabsClient } from "elevenlabs";
 ```
 
 ### After (Correct ✅):
+
 ```typescript
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 ```
@@ -18,8 +20,8 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
 Also fixed the response property names to use camelCase (as the SDK expects):
 
-- `response.next_cursor` → `response.nextCursor`
-- `response.has_more` → `response.hasMore`
+-   `response.next_cursor` → `response.nextCursor`
+-   `response.has_more` → `response.hasMore`
 
 ## Installation Command
 

@@ -117,12 +117,17 @@ export default function AnalyticsPage() {
                 averageSummaryScore: Math.round(avgSummaryScore),
                 recentActivity: (attempts as LessonAttemptWithLesson[]) || [],
             });
-        } catch (error: any) {
+        } catch (error) {
             console.error("Failed to load analytics:", error);
             // Show a helpful error message to the user
+            const errorMessage = error instanceof Error ? error.message : "";
+            const errorCode =
+                typeof error === "object" && error !== null && "code" in error
+                    ? (error as { code?: string }).code
+                    : undefined;
             if (
-                error?.message?.includes("does not exist") ||
-                error?.code === "42P01"
+                errorMessage?.includes("does not exist") ||
+                errorCode === "42P01"
             ) {
                 setStats(null);
             }
@@ -170,7 +175,7 @@ export default function AnalyticsPage() {
                             Database Setup Required
                         </CardTitle>
                         <CardDescription>
-                            The analytics tables haven't been created yet.
+                            The analytics tables haven&apos;t been created yet.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -235,7 +240,7 @@ export default function AnalyticsPage() {
                         </div>
 
                         <Button onClick={loadAnalytics} className="w-full">
-                            I've run the migration - Refresh
+                            I&apos;ve run the migration - Refresh
                         </Button>
                     </CardContent>
                 </Card>
@@ -357,7 +362,7 @@ export default function AnalyticsPage() {
                         ) : (
                             <div className="space-y-4">
                                 {stats.recentActivity.map((attempt) => {
-                                    const lesson = attempt.lessons as any;
+                                    const lesson = attempt.lessons as Lesson;
                                     const quizPercentage = Math.round(
                                         (attempt.score /
                                             attempt.total_questions) *
@@ -470,7 +475,9 @@ export default function AnalyticsPage() {
                                             router.push(
                                                 `/lessons/${
                                                     (
-                                                        selectedLesson.lessons as any
+                                                        selectedLesson.lessons as {
+                                                            id: string;
+                                                        }
                                                     ).id
                                                 }`
                                             )

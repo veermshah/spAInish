@@ -25,19 +25,21 @@ Check that the package is in your `package.json`:
 
 ```json
 {
-  "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^x.x.x"
-  }
+    "dependencies": {
+        "@elevenlabs/elevenlabs-js": "^x.x.x"
+    }
 }
 ```
 
 ## If You See Errors
 
 **"Cannot find module '@elevenlabs/elevenlabs-js'"**
-- Solution: Run `npm install @elevenlabs/elevenlabs-js`
+
+-   Solution: Run `npm install @elevenlabs/elevenlabs-js`
 
 **"Module not found: Can't resolve '@elevenlabs/elevenlabs-js'"**
-- Solution: Run `npm install @elevenlabs/elevenlabs-js` and restart dev server
+
+-   Solution: Run `npm install @elevenlabs/elevenlabs-js` and restart dev server
 
 ---
 

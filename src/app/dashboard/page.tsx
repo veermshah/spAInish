@@ -25,6 +25,8 @@ export default function DashboardPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [streakCount, setStreakCount] = useState(0);
+    const [conversationCount, setConversationCount] = useState(0);
+    const [totalCallTime, setTotalCallTime] = useState(0);
     const router = useRouter();
     const supabase = createClient();
 
@@ -62,6 +64,23 @@ export default function DashboardPage() {
 
             if (streakData !== null) {
                 setStreakCount(streakData);
+            }
+
+            // Fetch conversation data
+            try {
+                const response = await fetch("/api/conversations");
+                const data = await response.json();
+                const conversations = data.conversations || [];
+                setConversationCount(conversations.length);
+                
+                // Calculate total call time in minutes
+                const totalSeconds = conversations.reduce(
+                    (sum: number, conv: any) => sum + (conv.callDurationSecs || 0),
+                    0
+                );
+                setTotalCallTime(Math.round(totalSeconds / 60));
+            } catch (error) {
+                console.error("Error fetching conversations:", error);
             }
 
             setLoading(false);
@@ -152,13 +171,23 @@ export default function DashboardPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-primary mb-2">
-                                0
+                        <div className="space-y-4">
+                            <div className="text-center pb-4 border-b">
+                                <div className="text-3xl font-bold text-primary mb-2">
+                                    {conversationCount}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Conversations completed
+                                </p>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Conversations completed
-                            </p>
+                            <div className="text-center">
+                                <div className="text-2xl font-semibold text-primary mb-2">
+                                    {totalCallTime}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Minutes practiced
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -229,7 +258,9 @@ export default function DashboardPage() {
                                 </span>
                                 <span className="text-muted-foreground">
                                     {user?.created_at
-                                        ? new Date(user.created_at).toLocaleDateString()
+                                        ? new Date(
+                                              user.created_at
+                                          ).toLocaleDateString()
                                         : "N/A"}
                                 </span>
                             </div>

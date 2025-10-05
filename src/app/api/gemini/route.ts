@@ -172,10 +172,15 @@ Return ONLY valid JSON in this format:
                     { status: 400 }
                 );
         }
-    } catch (error: any) {
+    } catch (error) {
         console.error("Gemini API error:", error);
         return NextResponse.json(
-            { error: error.message || "Failed to process request" },
+            {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to process request",
+            },
             { status: 500 }
         );
     }

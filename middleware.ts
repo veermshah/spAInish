@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
-import { cookies } from "next/headers";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -20,8 +19,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // For protected routes, check authentication
-    const cookieStore = cookies();
-    const supabase = createClient(cookieStore);
+    const supabase = await createClient();
 
     const {
         data: { user },

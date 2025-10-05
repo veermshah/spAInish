@@ -1,12 +1,10 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST() {
     try {
-        const cookieStore = cookies();
-        const supabase = createClient(cookieStore);
+        const supabase = await createClient();
 
         // Get the current user
         const {
@@ -54,10 +52,8 @@ export async function POST() {
         });
     } catch (error) {
         console.error("Error making call:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to initiate call";
-        return NextResponse.json(
-            { error: errorMessage },
-            { status: 500 }
-        );
+        const errorMessage =
+            error instanceof Error ? error.message : "Failed to initiate call";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

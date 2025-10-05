@@ -135,9 +135,11 @@ export default function ProfileSetupPage() {
             console.log("Public URL:", publicUrl);
 
             return publicUrl;
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error uploading image:", err);
-            setError("Failed to upload profile image: " + err.message);
+            const errorMessage =
+                err instanceof Error ? err.message : "Unknown error";
+            setError("Failed to upload profile image: " + errorMessage);
             return null;
         } finally {
             setUploading(false);
@@ -171,6 +173,8 @@ export default function ProfileSetupPage() {
                 }
             }
 
+            if (!user) return;
+
             // Save profile data
             const profileData = {
                 id: user.id,
@@ -193,9 +197,11 @@ export default function ProfileSetupPage() {
 
             // Redirect to dashboard
             router.push("/dashboard");
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error saving profile:", err);
-            setError(err.message || "Failed to save profile");
+            const errorMessage =
+                err instanceof Error ? err.message : "Failed to save profile";
+            setError(errorMessage);
         } finally {
             setSaving(false);
         }
@@ -358,7 +364,7 @@ export default function ProfileSetupPage() {
 
                         {/* Learning Languages */}
                         <div className="space-y-2">
-                            <Label>Languages You're Learning *</Label>
+                            <Label>Languages You&apos;re Learning *</Label>
                             <p className="text-sm text-muted-foreground">
                                 Select at least one language
                             </p>

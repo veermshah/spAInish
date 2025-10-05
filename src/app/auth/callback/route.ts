@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
@@ -8,8 +7,7 @@ export async function GET(request: Request) {
     const origin = requestUrl.origin;
 
     if (code) {
-        const cookieStore = cookies();
-        const supabase = createClient(cookieStore);
+        const supabase = await createClient();
         const { data } = await supabase.auth.exchangeCodeForSession(code);
 
         // Check if this is a new user by checking if profile exists

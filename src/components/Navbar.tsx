@@ -8,11 +8,16 @@ import { User, LogOut, LogIn } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "./ui/button";
 
+interface UserData {
+    id: string;
+    email?: string;
+}
+
 export default function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
     const supabase = createClient();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
 
     const navItems = [

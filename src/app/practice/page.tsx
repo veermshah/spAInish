@@ -1,5 +1,24 @@
 "use client";
 
+// Type declaration for elevenlabs-convai custom element
+interface ElevenLabsConvAIElement extends HTMLElement {
+    "agent-id": string;
+}
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JSX {
+        interface IntrinsicElements {
+            "elevenlabs-convai": React.DetailedHTMLProps<
+                React.HTMLAttributes<HTMLElement> & {
+                    "agent-id": string;
+                },
+                HTMLElement
+            >;
+        }
+    }
+}
+
 import React, { useState, useEffect } from "react";
 import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
@@ -340,7 +359,9 @@ export default function Practice() {
 
                 {/* ElevenLabs Widget - Positioned Bottom Left */}
                 <div className="fixed bottom-6 left-6 z-50">
-                    <elevenlabs-convai agent-id="agent_6201k6shnp39eheavzgd5afg85pr"></elevenlabs-convai>
+                    {React.createElement("elevenlabs-convai", {
+                        "agent-id": "agent_6201k6shnp39eheavzgd5afg85pr",
+                    })}
                 </div>
             </div>
 
