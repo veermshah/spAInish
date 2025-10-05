@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { user_id, phone_number, scheduled } = body;
+        const { user_id, phone_number } = body;
 
         if (!phone_number) {
             return NextResponse.json(
@@ -37,10 +37,11 @@ export async function POST(request: Request) {
             user_id,
             data: response,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error making scheduled call:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to initiate scheduled call";
         return NextResponse.json(
-            { error: error.message || "Failed to initiate scheduled call" },
+            { error: errorMessage },
             { status: 500 }
         );
     }

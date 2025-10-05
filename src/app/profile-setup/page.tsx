@@ -31,8 +31,13 @@ const LANGUAGES = [
     "Dutch",
 ];
 
+interface UserData {
+    id: string;
+    email?: string;
+}
+
 export default function ProfileSetupPage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);

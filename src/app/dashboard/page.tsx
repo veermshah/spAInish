@@ -13,10 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Profile } from "@/types/database";
-import { User } from "lucide-react";
+
+interface UserData {
+    id: string;
+    email?: string;
+    created_at?: string;
+}
 
 export default function DashboardPage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserData | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [streakCount, setStreakCount] = useState(0);
@@ -223,9 +228,9 @@ export default function DashboardPage() {
                                     Account created:
                                 </span>
                                 <span className="text-muted-foreground">
-                                    {new Date(
-                                        user?.created_at
-                                    ).toLocaleDateString()}
+                                    {user?.created_at
+                                        ? new Date(user.created_at).toLocaleDateString()
+                                        : "N/A"}
                                 </span>
                             </div>
                         </div>

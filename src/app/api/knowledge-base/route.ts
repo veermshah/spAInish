@@ -1,22 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ElevenLabsClient } from "elevenlabs";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
 const client = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
 });
 
-// GET - List all knowledge base documents
-export async function GET() {
+// GET - List all knowledge base documents OR get a single document's content
+export async function GET(request: NextRequest) {
     try {
+        const { searchParams } = new URL(request.url);
+        const documentId = searchParams.get("id");
+
+        // If documentId is provided, get that specific document
+        if (documentId) {
+            const document = await client.conversationalAi.knowledgeBase.documents.get(documentId, {});
+            return NextResponse.json(document);
+        }
+
+        // Otherwise, list all documents
         const response = await client.conversationalAi.knowledgeBase.list({});
         
         return NextResponse.json({
             documents: response.documents || [],
-            next_cursor: response.next_cursor || null,
-            has_more: response.has_more || false,
+            next_cursor: response.nextCursor || null,
+            has_more: response.hasMore || false,
         });
     } catch (error: any) {
         console.error("Error fetching knowledge base:", error);
+        
+        // Check if it's a "not found" error
+        if (error.message?.includes("not found")) {
+            return NextResponse.json(
+                { error: "Document not found" },
+                { status: 404 }
+            );
+        }
+        
         return NextResponse.json(
             { error: error.message || "Failed to fetch knowledge base documents" },
             { status: 500 }

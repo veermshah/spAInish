@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST() {
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
@@ -52,10 +52,11 @@ export async function POST(request: Request) {
             message: "Call initiated",
             data: response,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error making call:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to initiate call";
         return NextResponse.json(
-            { error: error.message || "Failed to initiate call" },
+            { error: errorMessage },
             { status: 500 }
         );
     }

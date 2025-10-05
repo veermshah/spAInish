@@ -152,7 +152,7 @@ export default function Practice() {
                     text: `Scheduled ${callFrequency} calls at ${callTime}. You'll receive calls automatically!`,
                 });
             }
-        } catch (error: any) {
+        } catch {
             setMessage({ type: "error", text: "Failed to save schedule" });
         }
     };

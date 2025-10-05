@@ -19,11 +19,33 @@ import {
     Trash2,
     FileText,
     RefreshCw,
+    Eye,
+    X,
 } from "lucide-react";
 
 type KnowledgeDocument = {
     id: string;
     name: string;
+};
+
+type KnowledgeDocumentDetail = {
+    type: string;
+    id: string;
+    name: string;
+    metadata?: {
+        createdAtUnixSecs: number;
+        lastUpdatedAtUnixSecs: number;
+        sizeBytes: number;
+    };
+    supportedUsages?: string[];
+    accessInfo?: {
+        isCreator: boolean;
+        creatorName: string;
+        creatorEmail: string;
+        role: string;
+    };
+    extractedInnerHtml?: string;
+    text?: string;
 };
 
 type KnowledgeBaseResponse = {
@@ -40,6 +62,8 @@ export default function MemoriesPage() {
     const [newDocumentText, setNewDocumentText] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [viewingDocument, setViewingDocument] = useState<KnowledgeDocumentDetail | null>(null);
+    const [documentContentLoading, setDocumentContentLoading] = useState(false);
 
     useEffect(() => {
         loadDocuments();
@@ -130,6 +154,33 @@ export default function MemoriesPage() {
         } finally {
             setActionLoading(null);
         }
+    };
+
+    const handleViewDocument = async (documentId: string) => {
+        setDocumentContentLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/knowledge-base?id=${documentId}`, {
+                method: "GET",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch document content");
+            }
+
+            const data = await response.json();
+            setViewingDocument(data);
+        } catch (err: any) {
+            console.error("Error fetching document:", err);
+            setError(err.message || "Failed to fetch document content");
+        } finally {
+            setDocumentContentLoading(false);
+        }
+    };
+
+    const closeDocumentView = () => {
+        setViewingDocument(null);
     };
 
     return (
@@ -262,21 +313,32 @@ export default function MemoriesPage() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => handleDeleteDocument(doc.id)}
-                                            disabled={actionLoading === doc.id}
-                                        >
-                                            {actionLoading === doc.id ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <>
-                                                    <Trash2 className="h-4 w-4 mr-2" />
-                                                    Delete
-                                                </>
-                                            )}
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleViewDocument(doc.id)}
+                                                disabled={documentContentLoading}
+                                            >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                View
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => handleDeleteDocument(doc.id)}
+                                                disabled={actionLoading === doc.id}
+                                            >
+                                                {actionLoading === doc.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <Trash2 className="h-4 w-4 mr-2" />
+                                                        Delete
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -311,6 +373,142 @@ export default function MemoriesPage() {
                         </p>
                     </CardContent>
                 </Card>
+
+                {/* Document Viewer Modal */}
+                {viewingDocument && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Eye className="h-5 w-5" />
+                                        Memory Content
+                                    </CardTitle>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={closeDocumentView}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <CardDescription>
+                                    {viewingDocument.name}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {/* Document ID */}
+                                    <div>
+                                        <div className="text-sm font-medium text-muted-foreground mb-1">
+                                            Document ID
+                                        </div>
+                                        <code className="text-sm bg-muted px-2 py-1 rounded">
+                                            {viewingDocument.id}
+                                        </code>
+                                    </div>
+
+                                    {/* Extracted Content */}
+                                    {viewingDocument.extractedInnerHtml && (
+                                        <div>
+                                            <div className="text-sm font-medium mb-2">
+                                                Content
+                                            </div>
+                                            <div className="p-4 bg-muted/50 rounded-lg border">
+                                                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                                                    {viewingDocument.extractedInnerHtml}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Fallback to text field if extractedInnerHtml not available */}
+                                    {!viewingDocument.extractedInnerHtml && viewingDocument.text && (
+                                        <div>
+                                            <div className="text-sm font-medium mb-2">
+                                                Content
+                                            </div>
+                                            <div className="p-4 bg-muted/50 rounded-lg border">
+                                                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                                                    {viewingDocument.text}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Metadata */}
+                                    {viewingDocument.metadata && (
+                                        <div>
+                                            <div className="text-sm font-medium text-muted-foreground mb-2">
+                                                Metadata
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 text-xs">
+                                                <div className="p-3 bg-muted rounded">
+                                                    <div className="text-muted-foreground mb-1">Created</div>
+                                                    <div>{new Date(viewingDocument.metadata.createdAtUnixSecs * 1000).toLocaleString()}</div>
+                                                </div>
+                                                <div className="p-3 bg-muted rounded">
+                                                    <div className="text-muted-foreground mb-1">Last Updated</div>
+                                                    <div>{new Date(viewingDocument.metadata.lastUpdatedAtUnixSecs * 1000).toLocaleString()}</div>
+                                                </div>
+                                                <div className="p-3 bg-muted rounded">
+                                                    <div className="text-muted-foreground mb-1">Size</div>
+                                                    <div>{viewingDocument.metadata.sizeBytes} bytes</div>
+                                                </div>
+                                                <div className="p-3 bg-muted rounded">
+                                                    <div className="text-muted-foreground mb-1">Type</div>
+                                                    <div>{viewingDocument.type}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Access Info */}
+                                    {viewingDocument.accessInfo && (
+                                        <div>
+                                            <div className="text-sm font-medium text-muted-foreground mb-2">
+                                                Access Information
+                                            </div>
+                                            <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800 space-y-2 text-xs">
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Creator:</span>
+                                                    <span className="font-medium">{viewingDocument.accessInfo.creatorName}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Email:</span>
+                                                    <span className="font-medium">{viewingDocument.accessInfo.creatorEmail}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">Role:</span>
+                                                    <span className="font-medium capitalize">{viewingDocument.accessInfo.role}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Supported Usages */}
+                                    {viewingDocument.supportedUsages && viewingDocument.supportedUsages.length > 0 && (
+                                        <div>
+                                            <div className="text-sm font-medium text-muted-foreground mb-2">
+                                                Supported Usages
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {viewingDocument.supportedUsages.map((usage, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="px-3 py-1 bg-green-100 dark:bg-green-950/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium"
+                                                    >
+                                                        {usage}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
             </div>
         </div>
     );
