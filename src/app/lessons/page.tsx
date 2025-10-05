@@ -1013,7 +1013,7 @@ export default function LessonsPage() {
                                     onClick={submitQuiz}
                                     disabled={userAnswers.includes(-1)}
                                 >
-                                    Submit Quiz
+                                    Finish Quiz
                                 </Button>
                             </CardContent>
                         </Card>
