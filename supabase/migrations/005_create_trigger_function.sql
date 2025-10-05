@@ -9,8 +9,10 @@ DECLARE
   api_response extensions.http_response;
   api_url TEXT;
 BEGIN
-  -- Your API endpoint URL (you'll need to update this)
-  api_url := current_setting('app.api_url', true);
+  -- Get API URL from config table (will be created in a later migration)
+  SELECT value INTO api_url 
+  FROM public.app_config 
+  WHERE key = 'api_url';
   
   IF api_url IS NULL THEN
     api_url := 'http://localhost:3000/api/call-scheduled'; -- fallback for local dev

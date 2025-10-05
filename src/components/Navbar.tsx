@@ -18,6 +18,9 @@ export default function Navbar() {
     const navItems = [
         { name: "Dashboard", href: "/dashboard" },
         { name: "Practice", href: "/practice" },
+        { name: "Lessons", href: "/lessons" },
+        { name: "Analytics", href: "/analytics" },
+        { name: "Memories", href: "/memories" },
         { name: "Transcripts", href: "/transcripts" },
     ];
 

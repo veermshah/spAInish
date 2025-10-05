@@ -92,7 +92,10 @@ DECLARE
   api_response extensions.http_response;
   api_url TEXT;
 BEGIN
-  api_url := current_setting('app.api_url', true);
+  -- Get API URL from config table
+  SELECT value INTO api_url 
+  FROM public.app_config 
+  WHERE key = 'api_url';
   
   IF api_url IS NULL THEN
     api_url := 'http://localhost:3000/api/call-scheduled';
@@ -138,8 +141,24 @@ SELECT cron.schedule(
   'SELECT public.trigger_scheduled_calls();'
 );
 
--- Step 6: Set API URL (CHANGE THIS TO YOUR ACTUAL URL!)
-ALTER DATABASE postgres SET app.api_url = 'https://your-app-domain.vercel.app/api/call-scheduled';
+-- Step 6: Create config table and set API URL
+CREATE TABLE IF NOT EXISTS public.app_config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    description TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+INSERT INTO public.app_config (key, value, description)
+VALUES (
+    'api_url',
+    'https://habla-two.vercel.app/api/call-scheduled',
+    'Base API URL for scheduled calls'
+)
+ON CONFLICT (key) 
+DO UPDATE SET 
+    value = EXCLUDED.value,
+    updated_at = timezone('utc'::text, now());
 
 -- Verification queries
 -- Run these to verify everything is set up correctly:

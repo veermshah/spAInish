@@ -27,13 +27,15 @@ export async function POST(request: Request) {
             toNumber: phone_number,
         });
 
-        console.log(`Scheduled call initiated for user ${user_id} to ${phone_number}`);
+        console.log(
+            `Scheduled call initiated for user ${user_id} to ${phone_number}`
+        );
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             message: "Scheduled call initiated",
             user_id,
-            data: response 
+            data: response,
         });
     } catch (error: any) {
         console.error("Error making scheduled call:", error);

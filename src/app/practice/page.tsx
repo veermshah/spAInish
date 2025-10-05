@@ -5,7 +5,13 @@ import Script from "next/script";
 import { createClient } from "@/utils/supabase/client";
 import { Phone, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -17,20 +23,25 @@ export default function Practice() {
     const [callLoading, setCallLoading] = useState(false);
     const [callFrequency, setCallFrequency] = useState("daily");
     const [callTime, setCallTime] = useState("18:00");
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [message, setMessage] = useState<{
+        type: "success" | "error";
+        text: string;
+    } | null>(null);
     const supabase = createClient();
 
     useEffect(() => {
         const getPhoneNumber = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
             if (user) {
                 const { data: profile } = await supabase
                     .from("profiles")
                     .select("phone_number")
                     .eq("id", user.id)
                     .single();
-                
+
                 if (profile?.phone_number) {
                     setPhoneNumber(profile.phone_number);
                 }
@@ -73,7 +84,7 @@ export default function Practice() {
     const handleCallNow = async () => {
         setCallLoading(true);
         setMessage(null);
-        
+
         try {
             const response = await fetch("/api/call", {
                 method: "POST",
@@ -82,12 +93,18 @@ export default function Practice() {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage({ type: 'success', text: 'Call initiated! You should receive a call shortly.' });
+                setMessage({
+                    type: "success",
+                    text: "Call initiated! You should receive a call shortly.",
+                });
             } else {
-                setMessage({ type: 'error', text: data.error || 'Failed to initiate call' });
+                setMessage({
+                    type: "error",
+                    text: data.error || "Failed to initiate call",
+                });
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to initiate call' });
+            setMessage({ type: "error", text: "Failed to initiate call" });
         } finally {
             setCallLoading(false);
         }
@@ -95,39 +112,48 @@ export default function Practice() {
 
     const handleScheduleCall = async () => {
         setMessage(null);
-        
+
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
             if (!user) {
-                setMessage({ type: 'error', text: 'Please log in to schedule calls' });
+                setMessage({
+                    type: "error",
+                    text: "Please log in to schedule calls",
+                });
                 return;
             }
 
             // Save schedule to database
             const { error } = await supabase
-                .from('profiles')
+                .from("profiles")
                 .update({
                     call_schedule: {
                         frequency: callFrequency,
                         time: callTime,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        timezone:
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
                     },
                     call_schedule_enabled: true,
-                    updated_at: new Date().toISOString()
+                    updated_at: new Date().toISOString(),
                 })
-                .eq('id', user.id);
+                .eq("id", user.id);
 
             if (error) {
-                setMessage({ type: 'error', text: 'Failed to save schedule: ' + error.message });
+                setMessage({
+                    type: "error",
+                    text: "Failed to save schedule: " + error.message,
+                });
             } else {
-                setMessage({ 
-                    type: 'success', 
-                    text: `Scheduled ${callFrequency} calls at ${callTime}. You'll receive calls automatically!` 
+                setMessage({
+                    type: "success",
+                    text: `Scheduled ${callFrequency} calls at ${callTime}. You'll receive calls automatically!`,
                 });
             }
         } catch (error: any) {
-            setMessage({ type: 'error', text: 'Failed to save schedule' });
+            setMessage({ type: "error", text: "Failed to save schedule" });
         }
     };
 
@@ -142,7 +168,8 @@ export default function Practice() {
                                 Practice Spanish
                             </h1>
                             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                                Chat with our AI assistant or schedule phone calls to practice anytime
+                                Chat with our AI assistant or schedule phone
+                                calls to practice anytime
                             </p>
                         </div>
 
@@ -157,7 +184,8 @@ export default function Practice() {
                                             Call Now
                                         </CardTitle>
                                         <CardDescription>
-                                            Start a practice conversation immediately
+                                            Start a practice conversation
+                                            immediately
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -166,22 +194,28 @@ export default function Practice() {
                                                 <p className="text-sm text-muted-foreground mb-1">
                                                     Calling number:
                                                 </p>
-                                                <p className="font-medium">{phoneNumber}</p>
-                                            </div>
-                                        )}
-                                        
-                                        {!phoneNumber && (
-                                            <div className="p-3 bg-destructive/10 rounded-lg">
-                                                <p className="text-sm text-destructive">
-                                                    Please add your phone number in your profile to receive calls
+                                                <p className="font-medium">
+                                                    {phoneNumber}
                                                 </p>
                                             </div>
                                         )}
 
-                                        <Button 
-                                            className="w-full" 
+                                        {!phoneNumber && (
+                                            <div className="p-3 bg-destructive/10 rounded-lg">
+                                                <p className="text-sm text-destructive">
+                                                    Please add your phone number
+                                                    in your profile to receive
+                                                    calls
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            className="w-full"
                                             onClick={handleCallNow}
-                                            disabled={!phoneNumber || callLoading}
+                                            disabled={
+                                                !phoneNumber || callLoading
+                                            }
                                         >
                                             {callLoading ? (
                                                 <>
@@ -211,32 +245,50 @@ export default function Practice() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="frequency">Frequency</Label>
+                                            <Label htmlFor="frequency">
+                                                Frequency
+                                            </Label>
                                             <select
                                                 id="frequency"
                                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                 value={callFrequency}
-                                                onChange={(e) => setCallFrequency(e.target.value)}
+                                                onChange={(e) =>
+                                                    setCallFrequency(
+                                                        e.target.value
+                                                    )
+                                                }
                                             >
-                                                <option value="daily">Daily</option>
-                                                <option value="weekdays">Weekdays Only</option>
-                                                <option value="weekly">Weekly</option>
-                                                <option value="biweekly">Bi-weekly</option>
+                                                <option value="daily">
+                                                    Daily
+                                                </option>
+                                                <option value="weekdays">
+                                                    Weekdays Only
+                                                </option>
+                                                <option value="weekly">
+                                                    Weekly
+                                                </option>
+                                                <option value="biweekly">
+                                                    Bi-weekly
+                                                </option>
                                             </select>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="time">Preferred Time</Label>
+                                            <Label htmlFor="time">
+                                                Preferred Time
+                                            </Label>
                                             <Input
                                                 id="time"
                                                 type="time"
                                                 value={callTime}
-                                                onChange={(e) => setCallTime(e.target.value)}
+                                                onChange={(e) =>
+                                                    setCallTime(e.target.value)
+                                                }
                                             />
                                         </div>
 
-                                        <Button 
-                                            className="w-full" 
+                                        <Button
+                                            className="w-full"
                                             variant="outline"
                                             onClick={handleScheduleCall}
                                             disabled={!phoneNumber}
@@ -251,11 +303,13 @@ export default function Practice() {
 
                         {/* Message Display */}
                         {message && (
-                            <div className={`mb-8 p-4 rounded-lg ${
-                                message.type === 'success' 
-                                    ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
-                                    : 'bg-destructive/10 text-destructive'
-                            }`}>
+                            <div
+                                className={`mb-8 p-4 rounded-lg ${
+                                    message.type === "success"
+                                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                        : "bg-destructive/10 text-destructive"
+                                }`}
+                            >
                                 {message.text}
                             </div>
                         )}
@@ -265,14 +319,18 @@ export default function Practice() {
                             <CardHeader>
                                 <CardTitle>Practice via Web Chat</CardTitle>
                                 <CardDescription>
-                                    Click the assistant in the bottom left corner to start a conversation
+                                    Click the assistant in the bottom left
+                                    corner to start a conversation
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center justify-center py-8">
                                     <div className="inline-flex items-center gap-2 text-muted-foreground">
                                         <div className="animate-pulse h-3 w-3 bg-green-500 rounded-full"></div>
-                                        <span>AI Assistant ready in bottom left corner</span>
+                                        <span>
+                                            AI Assistant ready in bottom left
+                                            corner
+                                        </span>
                                     </div>
                                 </div>
                             </CardContent>

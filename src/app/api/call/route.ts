@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     try {
         const cookieStore = cookies();
         const supabase = createClient(cookieStore);
-        
+
         // Get the current user
         const {
             data: { user },
@@ -47,10 +47,10 @@ export async function POST(request: Request) {
             toNumber: profile.phone_number,
         });
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             message: "Call initiated",
-            data: response 
+            data: response,
         });
     } catch (error: any) {
         console.error("Error making call:", error);
