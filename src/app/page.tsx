@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { Sparkles, TrendingUp, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const GlobeComponent = dynamic(() => import("@/components/GlobeComponent"), {
-    ssr: false,
-});
+const Spline = dynamic(
+    () => import("@splinetool/react-spline").then((mod) => mod.default),
+    {
+        ssr: false,
+    }
+);
 
 export default function Home() {
     const phrases = [
@@ -71,7 +74,7 @@ export default function Home() {
             {/* Globe Background - only render on client */}
             {mounted && (
                 <div className="absolute inset-0 z-0">
-                    <GlobeComponent />
+                    <Spline scene="https://prod.spline.design/DMgqegIru5gadIVJ/scene.splinecode" />
                 </div>
             )}
 

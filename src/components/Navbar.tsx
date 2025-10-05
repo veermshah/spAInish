@@ -62,7 +62,7 @@ export default function Navbar() {
                     <div className="flex-shrink-0">
                         <Link
                             href="/"
-                            className="text-4xl font-bold bg-gradient-to-r text-purple-500 bg-clip-text hover:from-blue-500 hover:to-purple-500 transition-all"
+                            className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent hover:from-orange-600 hover:to-red-600 transition-all"
                         >
                             Habla
                         </Link>
