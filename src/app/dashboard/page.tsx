@@ -19,6 +19,7 @@ export default function DashboardPage() {
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [streakCount, setStreakCount] = useState(0);
     const router = useRouter();
     const supabase = createClient();
 
@@ -46,6 +47,18 @@ export default function DashboardPage() {
                 setProfile(profileData);
             }
 
+            // Get streak count
+            const { data: streakData } = await supabase.rpc(
+                "get_streak_count",
+                {
+                    user_id: user.id,
+                }
+            );
+
+            if (streakData !== null) {
+                setStreakCount(streakData);
+            }
+
             setLoading(false);
         };
 
@@ -60,57 +73,39 @@ export default function DashboardPage() {
         );
     }
 
-    // Generate streak data (last 30 days)
+    // Generate streak data (last 30 days) from actual activity dates
     const generateStreakData = () => {
         const today = new Date();
         const streakData = [];
-        
+        const activityDates = new Set(
+            profile?.activity_dates?.map((date) => date.split("T")[0]) || []
+        );
+
         for (let i = 29; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
-            const dayOfWeek = date.getDay();
-            
-            // Simulate some activity (you'll replace this with actual data)
-            const hasActivity = Math.random() > 0.5;
-            
+            const dateString = date.toISOString().split("T")[0];
+
             streakData.push({
-                date: date.toISOString().split('T')[0],
+                date: dateString,
                 day: date.getDate(),
-                hasActivity,
+                hasActivity: activityDates.has(dateString),
                 isToday: i === 0,
             });
         }
-        
+
         return streakData;
     };
 
     const streakData = generateStreakData();
-    const currentStreak = streakData.filter(d => d.hasActivity).length;
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="mb-8 flex items-center gap-4">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                    {profile?.avatar_url ? (
-                        <img
-                            src={profile.avatar_url}
-                            alt="Profile"
-                            className="w-16 h-16 rounded-full object-cover border-2 border-primary"
-                        />
-                    ) : (
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
-                            <User className="w-8 h-8 text-primary" />
-                        </div>
-                    )}
-                </div>
-                
-                <div>
-                    <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-                    <p className="text-muted-foreground">
-                        Welcome back, {profile?.first_name || user?.email}!
-                    </p>
-                </div>
+            <div className="mb-8">
+                <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+                <p className="text-muted-foreground">
+                    Welcome back, {profile?.first_name || user?.email}!
+                </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -163,7 +158,7 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-2 lg:col-span-3">
+                <Card className="md:col-span-1 lg:col-span-1">
                     <CardHeader>
                         <CardTitle>Account Information</CardTitle>
                         <CardDescription>Your account details</CardDescription>
@@ -176,12 +171,53 @@ export default function DashboardPage() {
                                     {user?.email}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b">
-                                <span className="font-medium">User ID:</span>
-                                <span className="text-muted-foreground font-mono text-sm">
-                                    {user?.id}
-                                </span>
-                            </div>
+                            {profile?.birthdate && (
+                                <div className="flex justify-between items-center py-2 border-b">
+                                    <span className="font-medium">
+                                        Birthday:
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {(() => {
+                                            const [year, month, day] =
+                                                profile.birthdate.split("-");
+                                            const date = new Date(
+                                                parseInt(year),
+                                                parseInt(month) - 1,
+                                                parseInt(day)
+                                            );
+                                            return date.toLocaleDateString(
+                                                "en-US",
+                                                {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                }
+                                            );
+                                        })()}
+                                    </span>
+                                </div>
+                            )}
+                            {profile?.learning_languages &&
+                                profile.learning_languages.length > 0 && (
+                                    <div className="flex justify-between items-center py-2 border-b">
+                                        <span className="font-medium">
+                                            Learning:
+                                        </span>
+                                        <span className="text-muted-foreground">
+                                            {profile.learning_languages.join(
+                                                ", "
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
+                            {profile?.phone_number && (
+                                <div className="flex justify-between items-center py-2 border-b">
+                                    <span className="font-medium">Phone:</span>
+                                    <span className="text-muted-foreground">
+                                        {profile.phone_number}
+                                    </span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center py-2">
                                 <span className="font-medium">
                                     Account created:
@@ -191,6 +227,78 @@ export default function DashboardPage() {
                                         user?.created_at
                                     ).toLocaleDateString()}
                                 </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Streak Calendar */}
+                <Card className="md:col-span-1 lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Practice Streak</CardTitle>
+                        <CardDescription>
+                            Your learning consistency over the last 30 days
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="text-center">
+                                    <div className="text-3xl font-bold text-primary">
+                                        {streakCount}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        Day Streak
+                                    </p>
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                    Last 30 days
+                                </div>
+                            </div>
+
+                            {/* Streak Grid */}
+                            <div className="grid grid-cols-10 gap-2">
+                                {streakData.map((day, index) => (
+                                    <div
+                                        key={index}
+                                        className={`
+                                            aspect-square rounded-sm flex items-center justify-center text-xs
+                                            transition-all duration-200 hover:scale-110
+                                            ${
+                                                day.hasActivity
+                                                    ? "bg-primary text-primary-foreground font-semibold"
+                                                    : "bg-muted text-muted-foreground"
+                                            }
+                                            ${
+                                                day.isToday
+                                                    ? "ring-2 ring-primary ring-offset-2"
+                                                    : ""
+                                            }
+                                        `}
+                                        title={`${day.date}${
+                                            day.hasActivity
+                                                ? " - Active"
+                                                : " - No activity"
+                                        }`}
+                                    >
+                                        {day.day}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center gap-4 text-sm pt-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-muted rounded-sm"></div>
+                                    <span className="text-muted-foreground">
+                                        No activity
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-primary rounded-sm"></div>
+                                    <span className="text-muted-foreground">
+                                        Active
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

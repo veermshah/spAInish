@@ -107,23 +107,32 @@ export default function ProfileSetupPage() {
         setUploading(true);
         try {
             const fileExt = profileImageFile.name.split(".").pop();
-            const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+            const fileName = `${user.id}-${Date.now()}.${fileExt}`;
             const filePath = `avatars/${fileName}`;
 
-            const { error: uploadError } = await supabase.storage
+            console.log("Uploading image to:", filePath);
+
+            const { error: uploadError, data } = await supabase.storage
                 .from("profiles")
                 .upload(filePath, profileImageFile, { upsert: true });
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error("Upload error:", uploadError);
+                throw uploadError;
+            }
+
+            console.log("Upload successful:", data);
 
             const {
                 data: { publicUrl },
             } = supabase.storage.from("profiles").getPublicUrl(filePath);
 
+            console.log("Public URL:", publicUrl);
+
             return publicUrl;
         } catch (err: any) {
             console.error("Error uploading image:", err);
-            setError("Failed to upload profile image");
+            setError("Failed to upload profile image: " + err.message);
             return null;
         } finally {
             setUploading(false);
@@ -145,28 +154,35 @@ export default function ProfileSetupPage() {
         setSaving(true);
 
         try {
-            // Upload image if selected
+            // Upload image first if selected
             let avatarUrl = profileImageUrl;
             if (profileImageFile) {
                 const uploadedUrl = await uploadProfileImage();
                 if (uploadedUrl) {
                     avatarUrl = uploadedUrl;
+                } else if (!profileImageUrl) {
+                    // If upload failed and there's no existing URL, set to null
+                    avatarUrl = null;
                 }
             }
 
             // Save profile data
+            const profileData = {
+                id: user.id,
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                birthdate: formData.birthdate,
+                phone_number: formData.phoneNumber,
+                learning_languages: formData.learningLanguages,
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString(),
+            };
+
+            console.log("Saving profile with data:", profileData);
+
             const { error: upsertError } = await supabase
                 .from("profiles")
-                .upsert({
-                    id: user.id,
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    birthdate: formData.birthdate,
-                    phone_number: formData.phoneNumber,
-                    learning_languages: formData.learningLanguages,
-                    avatar_url: avatarUrl,
-                    updated_at: new Date().toISOString(),
-                });
+                .upsert(profileData);
 
             if (upsertError) throw upsertError;
 
