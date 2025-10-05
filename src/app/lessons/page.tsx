@@ -1021,7 +1021,7 @@ export default function LessonsPage() {
 
                     {/* Step 4: Write Summary (Optional) */}
                     {step === "summary" && (
-                        <Card>
+                        <Card className="h-[500px] flex flex-col">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <PenTool className="h-5 w-5" />
@@ -1032,14 +1032,14 @@ export default function LessonsPage() {
                                     Spanish to get AI feedback
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="space-y-2">
+                            <CardContent className="space-y-6 flex-1 flex flex-col">
+                                <div className="space-y-2 flex-1 flex flex-col">
                                     <Label htmlFor="summary">
                                         Your Summary
                                     </Label>
                                     <textarea
                                         id="summary"
-                                        className="w-full min-h-[200px] p-4 rounded-lg border bg-background resize-none"
+                                        className="w-full flex-1 p-4 rounded-lg border bg-background resize-none"
                                         placeholder="Escribe un resumen del artículo aquí..."
                                         value={userSummary}
                                         onChange={(e) =>

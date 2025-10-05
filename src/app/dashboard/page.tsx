@@ -72,10 +72,11 @@ export default function DashboardPage() {
                 const data = await response.json();
                 const conversations = data.conversations || [];
                 setConversationCount(conversations.length);
-                
+
                 // Calculate total call time in minutes
                 const totalSeconds = conversations.reduce(
-                    (sum: number, conv: any) => sum + (conv.callDurationSecs || 0),
+                    (sum: number, conv: any) =>
+                        sum + (conv.callDurationSecs || 0),
                     0
                 );
                 setTotalCallTime(Math.round(totalSeconds / 60));
@@ -171,21 +172,22 @@ export default function DashboardPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            <div className="text-center pb-4 border-b">
+                        <div className="flex items-center justify-around gap-4">
+                            <div className="text-center">
                                 <div className="text-3xl font-bold text-primary mb-2">
                                     {conversationCount}
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Conversations completed
+                                    Conversations
                                 </p>
                             </div>
+                            <div className="h-12 w-px bg-border"></div>
                             <div className="text-center">
-                                <div className="text-2xl font-semibold text-primary mb-2">
+                                <div className="text-3xl font-bold text-primary mb-2">
                                     {totalCallTime}
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Minutes practiced
+                                    Minutes
                                 </p>
                             </div>
                         </div>
