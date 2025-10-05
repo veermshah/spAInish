@@ -62,7 +62,7 @@ export default function Navbar() {
                     <div className="flex-shrink-0">
                         <Link
                             href="/"
-                            className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-500 hover:to-purple-500 transition-all"
+                            className="text-4xl font-bold bg-gradient-to-r text-purple-500 bg-clip-text hover:from-blue-500 hover:to-purple-500 transition-all"
                         >
                             Habla
                         </Link>
@@ -75,7 +75,7 @@ export default function Navbar() {
                                 key={item.name}
                                 href={item.href}
                                 className={`
-                                    relative px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+                                    relative px-4 py-2 text-xl font-medium rounded-md transition-all duration-200
                                     ${
                                         isActive(item.href)
                                             ? "text-foreground"
