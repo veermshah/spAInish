@@ -3,15 +3,16 @@ import { NextResponse } from "next/server";
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const client = new ElevenLabsClient({
             apiKey: process.env.ELEVENLABS_API_KEY,
         });
 
         const conversation = await client.conversationalAi.conversations.get(
-            params.id
+            id
         );
 
         return NextResponse.json(conversation);
