@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
-const VOICE_ID = "kcQkGnn0HAT2JRDQ4Ljp";
+// Premade voices work on every ElevenLabs plan; Voice Library voices need a paid
+// plan for API use. Set ELEVENLABS_VOICE_ID to use a different voice.
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "EXAVITQu4vr4xnSDxMaL";
 const MODEL_ID = "eleven_multilingual_v2";
 // Lessons are a few paragraphs; cap input so the endpoint can't be used to burn credits.
 const MAX_CHARS = 6000;
