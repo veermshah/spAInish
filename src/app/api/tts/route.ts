@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const VOICE_ID = "kcQkGnn0HAT2JRDQ4Ljp";
-const MODEL_ID = "eleven_monolingual_v1";
+const MODEL_ID = "eleven_multilingual_v2";
 // Lessons are a few paragraphs; cap input so the endpoint can't be used to burn credits.
 const MAX_CHARS = 6000;
 
