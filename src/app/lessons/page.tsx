@@ -266,21 +266,11 @@ export default function LessonsPage() {
         try {
             const fullText = articleData.sections.map((s) => s.text).join(" ");
 
-            const response = await fetch(
-                "https://api.elevenlabs.io/v1/text-to-speech/kcQkGnn0HAT2JRDQ4Ljp/with-timestamps",
-                {
-                    method: "POST",
-                    headers: {
-                        "xi-api-key":
-                            "3c9da6b1d0d551b798a65902ff1b68637255e8e0541b287ba3693bf961f79619",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        text: fullText,
-                        model_id: "eleven_monolingual_v1",
-                    }),
-                }
-            );
+            const response = await fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: fullText }),
+            });
 
             if (!response.ok) {
                 throw new Error("Failed to generate speech");
